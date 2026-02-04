@@ -1,8 +1,10 @@
 import collections
 import dataclasses
 import functools
+import itertools
 import math
 import random
+from collections.abc import Sequence
 from typing import Any, Callable, Iterable
 
 from kungfu import Error, Ok, Result
@@ -27,7 +29,7 @@ class Enum[T](collections.UserList):
     """Underlying buffer which contains the elements."""
 
     def __init__(self, data: Iterable[T]) -> None:
-        """Initialize Enum from any iterable by converting it to a `list`"""
+        """Initialize Enum from any iterable by converting it to a `list`."""
         self.data = list(data)
 
     def __eq__(self, other: object) -> bool:
@@ -123,15 +125,76 @@ class Enum[T](collections.UserList):
         """Map each element to a string and join them with `joiner`."""
         return joiner.join(self.map(transform))
 
-    def product(self, mapper: Transform1[T, Number] | None = None) -> Number:
-        """Return the product of elements, optionally mapping each element first."""
-        if mapper:
-            return math.prod(self.map(mapper))
+    def min(self) -> T:
+        """Return the maximal element. Raise ValueError when Enum is empty."""
+        if self.empty():
+            raise ValueError("min(): enum is empty")
+        return min(self)
+
+    def min_by(self, key: Transform1[T, Any]) -> T:
+        """Return the minimal element as calculated by key. Raise ValueError when Enum is empty."""
+        if self.empty():
+            raise ValueError("min(): enum is empty")
+        return min(self, key=key)
+
+    def max(self) -> T:
+        """Return the maximal element. Raise ValueError when Enum is empty."""
+        if self.empty():
+            raise ValueError("max(): enum is empty")
+        return max(self)
+
+    def max_by(self, key: Transform1[T, Any]) -> T:
+        """Return the maximal element as calculated by key. Raise ValueError when Enum is empty."""
+        if self.empty():
+            raise ValueError("max(): enum is empty")
+        return max(self, key=key)
+
+    def min_max(self) -> tuple[T, T]:
+        """Return both minimum and maximum of the elements. Raise ValueError when Enum is empty."""
+        if self.empty():
+            raise ValueError("min_max(): enum is empty")
+        return (self.min(), self.max())
+
+    def min_max_by(self, key: Transform1[T, Any]) -> tuple[T, T]:
+        """Return both minimum and maximum of the elements as calculated by key.
+        Raise ValueError when Enum is empty.
+        """
+        if self.empty():
+            raise ValueError("min_max(): enum is empty")
+        return (self.min_by(key), self.max_by(key))
+
+    def prod(self) -> Number:
+        """Return the product of elements."""
         return math.prod(self)
+
+    def prod_by(self, mapper: Transform1[T, Number]) -> Number:
+        """Return the product of elements, mapping each element first."""
+        return math.prod(self.map(mapper))
 
     def filter(self, predicate: Predicate[T]) -> Enum[T]:
         """Return a new Enum containing only elements where predicate(element) is True."""
         return Enum([x for x in self if predicate(x)])
+
+    def filter_map[G, E](self, transform: Transform1[T, Result[G, E]]) -> Enum[G]:
+        """Return a new Enum containing only the elements from the first list for which the given function returns Ok(_)."""
+        result = []
+        for element in self:
+            match transform(element):
+                case Ok(x):
+                    result.append(x)
+                case Error(_e):
+                    pass
+        return Enum(result)
+
+    def flatten(self) -> Enum:
+        """Return a new Enum which contains no inner Enum's."""
+        result = []
+        for element in self:
+            if isinstance(element, Sequence):
+                result.extend(Enum(element).flatten())
+            else:
+                result.append(element)
+        return Enum(result)
 
     def find(self, predicate: Predicate[T], default: T | None = None) -> T | None:
         """Return the first element matching predicate or default if none match."""
@@ -224,11 +287,13 @@ class Enum[T](collections.UserList):
                 falsy.append(element)
         return (Enum(truthy), Enum(falsy))
 
-    def sum(self, mapper: Transform1[T, Number] | None = None) -> Number:
-        """Return the sum of elements, optionally mapping each element first."""
-        if mapper:
-            return sum(self.map(mapper))
+    def sum(self) -> Number:
+        """Return the sum of elements."""
         return sum(self)
+
+    def sum_by(self, mapper: Transform1[T, Number]) -> Number:
+        """Return the sum of elements mapping each element first."""
+        return sum(self.map(mapper))
 
     def take(self, amount: int) -> Enum[T]:
         """Return a new Enum with the first `amount` elements (negative takes from tail)."""
@@ -249,3 +314,23 @@ class Enum[T](collections.UserList):
     def take_random(self, count: int) -> Enum[T]:
         """Return `count` randomly selected elements (without replacement) as a new Enum."""
         return self.shuffle().take(count)
+
+    def take_while(self, predicate: Predicate[T]) -> Enum[T]:
+        """Return elements from the start which satisfy the predicate."""
+        return Enum(itertools.takewhile(predicate, self))
+
+    def uniq(self) -> Enum[T]:
+        """Return a new Enum, removing all duplicate elements.
+        The first occurence of each element is kept and the overall order is preserved.
+        """
+        result = []
+        for element in self:
+            if element not in result:
+                result.append(element)
+        return Enum(result)
+
+    def zip(self) -> Enum[Any]:
+        """Zips corresponding elements from a finite collection of enumerables into a list of tuples.
+        The zipping finishes as soon as any enumerable in the given collection completes.
+        """
+        return Enum(zip(self))

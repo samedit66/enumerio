@@ -56,7 +56,7 @@ So you can pass `Enum` to any function which accepts a `list` as argument.
 
 List of methods on `Enum` with short descriptions (roughly following the implementation):
 
-- `Enum(data)`: construct an Enum from any iterable.
+- `Enum(data)` — Construct an `Enum` from any iterable.
 - `len()` — Return number of elements.
 - `member(elem)` — True when `elem` is present.
 - `all(predicate=None)` — True if all elements satisfy `predicate` (or truthy if no predicate).
@@ -70,23 +70,36 @@ List of methods on `Enum` with short descriptions (roughly following the impleme
 - `fetch_(index)` — Return element or raise `IndexError` if out-of-range.
 - `map(transform)` — Map elements with `transform`, returning a new `Enum`.
 - `map_join(transform, joiner="")` — Map elements to strings and join them.
-- `product(mapper=None)` — Product of elements (optionally mapped first).
+- `min()` — Return the minimal element; raises `ValueError` if empty.
+- `min_by(key)` — Return the element minimizing `key`; raises `ValueError` if empty.
+- `max()` — Return the maximal element; raises `ValueError` if empty.
+- `max_by(key)` — Return the element maximizing `key`; raises `ValueError` if empty.
+- `min_max()` — Return `(min, max)` pair; raises `ValueError` if empty.
+- `min_max_by(key)` — Return `(min_by, max_by)` pair based on `key`.
+- `prod()` — Product of elements (`math.prod`).
+- `prod_by(mapper)` — Product after mapping each element with `mapper`.
 - `filter(predicate)` — Keep elements that match `predicate`.
+- `filter_map(transform)` — Apply `transform` returning `Result`; collect unwrapped `Ok` values and discard `Error`s.
+- `flatten()` — Deep-flatten nested sequences into a single `Enum`.
 - `find(predicate, default=None)` — Return first matching element or `default`.
 - `find_index(predicate)` — Return index of first matching element or `None`.
 - `find_value(transform, default=None)` — Return first truthy transformed value or `default`.
 - `frequencies()` — Return `dict[element, count]` of occurrences.
 - `join(joiner="")` — Join string elements using `joiner`.
 - `reject(predicate)` — Complement of `filter` (exclude when predicate true).
-- `reversed(tail=None)` — Return reversed Enum, optionally appending `tail`.
+- `reversed(tail=None)` — Return reversed `Enum`, optionally appending `tail`.
 - `random()` — Return one random element (raises if empty).
 - `reduce(fun, acc)` — Reduce to a single value using `fun` and initial `acc`.
-- `shuffle()` — Return a shuffled Enum copy.
-- `sorted()` — Return Enum sorted ascending.
-- `split(count)` — Split into two Enums: first `count` and the rest.
+- `shuffle()` — Return a shuffled `Enum` copy.
+- `sorted()` — Return `Enum` sorted ascending.
+- `split(count)` — Split into two `Enum`s: first `count` and the rest.
 - `split_while(predicate)` — Split into prefix satisfying predicate and remaining suffix.
-- `split_with(predicate)` — Partition into (matching, not matching).
-- `sum(mapper=None)` — Sum elements (optionally mapping first).
+- `split_with(predicate)` — Partition into `(matching, not_matching)`.
+- `sum()` — Sum elements.
+- `sum_by(mapper)` — Sum after mapping each element with `mapper`.
 - `take(amount)` — Take first `amount` elements (negative takes from tail).
 - `take_every(nth)` — Take every `nth` element.
 - `take_random(count)` — Return `count` random elements.
+- `take_while(predicate)` — Take elements from the start while `predicate` holds.
+- `uniq()` — Return a new `Enum` preserving order but removing duplicate elements (first occurrence kept).
+- `zip()` — Zip corresponding elements from a collection of enumerables into an `Enum` of tuples. (Stops when the shortest enumerable is exhausted.)
