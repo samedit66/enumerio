@@ -334,3 +334,27 @@ class Enum[T](collections.UserList):
         The zipping finishes as soon as any enumerable in the given collection completes.
         """
         return Enum(zip(self))
+
+    def sublist(self, *indices: Any) -> Enum[Any]:
+        """Extract elements at the given indices from each sub-sequence.
+
+        Assumes each element of the Enum is indexable. Returns a new Enum
+        where each element is an Enum containing values from the specified indices.
+        """
+        result = []
+        for sublist in self:
+            result.append(Enum(sublist[i] for i in indices))
+        return Enum(result)
+
+    def subdict(self, *keys: Any) -> Enum[Any]:
+        """Extract key-value pairs for the given keys from each sub-dictionary.
+
+        Assumes each element of the Enum is a mapping. Returns a new Enum
+        of dictionaries containing only the specified keys.
+        """
+        result = []
+        for subdict in self:
+            result.append(
+                dict((key, value) for key, value in subdict.items() if key in keys)
+            )
+        return Enum(result)

@@ -119,3 +119,5 @@ List of methods on `Enum` with short descriptions (roughly following the impleme
 - `take_while(predicate)` — Take elements from the start while `predicate` holds.
 - `uniq()` — Return a new `Enum` preserving order but removing duplicate elements (first occurrence kept).
 - `zip()` — Zip corresponding elements from a collection of enumerables into an `Enum` of tuples. (Stops when the shortest enumerable is exhausted.)
+- `sublist(*indices)` — Extract elements at the given indices from each sub-sequence.
+- `subdict(*keys)` — Extract key-value pairs for the given keys from each sub-dictionary.

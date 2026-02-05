@@ -21,3 +21,11 @@ def test_split():
     assert Enum([1, 2, 3]).split(0) == ([], [1, 2, 3])
     assert Enum([1, 2, 3]).split(-1) == ([1, 2], [3])
     assert Enum([1, 2, 3]).split(-5) == ([], [1, 2, 3])
+
+
+def test_select():
+    assert Enum([[1, 2, 3], [4, 5, 6]]).sublist(0, 1) == [[1, 2], [4, 5]]
+    assert Enum([{"a": 1, "b": 2, "c": 3}, {"a": 5, "b": 6}]).subdict("a") == [
+        {"a": 1},
+        {"a": 5},
+    ]
