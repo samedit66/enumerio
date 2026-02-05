@@ -358,3 +358,11 @@ class Enum[T](collections.UserList):
                 dict((key, value) for key, value in subdict.items() if key in keys)
             )
         return Enum(result)
+
+    def select(self, key: Any) -> Enum[Any]:
+        """Select the value for `key` from each element.
+
+        Assumes each element supports key-based access (e.g. dict, mapping or list).
+        Returns a new Enum containing `element[key]` for every element.
+        """
+        return Enum(element[key] for element in self)
