@@ -29,9 +29,9 @@ class Enum[T](collections.UserList):
     data: list[T]
     """Underlying buffer which contains the elements."""
 
-    def __init__(self, data: Iterable[T]) -> None:
+    def __init__(self, *data: Iterable[T]) -> None:
         """Initialize Enum from any iterable by converting it to a `list`."""
-        self.data = list(data)
+        self.data = list(data[0]) if len(data) == 1 else list(data)
 
     def __eq__(self, other: object) -> bool:
         """Compare the underlying data list to another sequence or `Enum`."""
@@ -83,6 +83,13 @@ class Enum[T](collections.UserList):
                 break
 
         return Enum(chunked)
+
+    def concat(self) -> Enum[Any]:
+        """Given an `Enum` of iterables, concatenates them into a single `Enum`"""
+        result = []
+        for element in self:
+            result.extend(element)
+        return Enum(result)
 
     def drop(self, amount: int) -> Enum[T]:
         """Return a new Enum with `amount` elements removed from the head (negative drops from tail)."""
