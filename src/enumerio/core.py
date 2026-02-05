@@ -360,13 +360,16 @@ class Enum[T](collections.UserList):
             )
         return Enum(result)
 
-    def select(self, key: Any) -> Enum[Any]:
-        """Select the value for `key` from each element.
+    def select(self, *keys: Any) -> Enum[Any]:
+        """Select the values for `keys` from each element.
 
         Assumes each element supports key-based access (e.g. dict, mapping or list).
         Returns a new Enum containing `element[key]` for every element.
         """
-        return Enum(element[key] for element in self)
+        result = []
+        for subseq in self:
+            result.append(tuple(subseq[key] for key in keys))
+        return Enum(result)
 
     def to_list(self) -> list[T]:
         """Convert Enum to a list."""
