@@ -6,8 +6,8 @@ def test_map():
 
 
 def test_chunk_every():
-    assert Enum([1, 2, 3, 4, 5]).chunk_every(3) == [[1, 2, 3], [4, 5]]
-    assert Enum([1, 2, 3, 4, 5]).chunk_every(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+    assert Enum([1, 2, 3, 4, 5]).chunked(3) == [[1, 2, 3], [4, 5]]
+    assert Enum([1, 2, 3, 4, 5]).chunked(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
 
 
 def test_map_join():
@@ -43,3 +43,13 @@ def test_select():
 
 def test_to_dict():
     assert Enum([("a", 1), ("b", 2)]).to_dict() == {"a": 1, "b": 2}
+
+
+def test_drop_every():
+    assert Enum(range(1, 11)).drop_every(2) == [2, 4, 6, 8, 10]
+    assert Enum(range(1, 11)).drop_every(0) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    assert Enum([1, 2, 3]).drop_every(1) == []
+
+
+def test_drop_while():
+    assert Enum([1, 2, 3, 2, 1]).drop_while(lambda x: x < 3) == [3, 2, 1]

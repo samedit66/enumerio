@@ -27,27 +27,24 @@ class Enum[T](collections.UserList):
     """
 
     data: list[T]
-    """Underlying buffer which contains the elements."""
+    """Underlying list which contains the elements."""
 
-    def __init__(self, *data: Iterable[T]) -> None:
-        """Initialize Enum from any iterable by converting it to a `list`."""
-        self.data = list(data[0]) if len(data) == 1 else list(data)
+    def __init__(self, *data: Sequence[T]) -> None:
+        if len(data) == 1 and isinstance(data[0], Sequence):
+            self.data = list(data[0])
+        else:
+            self.data = list(data)
 
     def __eq__(self, other: object) -> bool:
-        """Compare the underlying data list to another sequence or `Enum`."""
         return self.data == other
 
-    # Functions defined in `Enumerable` protocol
-
-    def len(self) -> int:
-        """Return the number of elements in the Enum."""
+    def size(self) -> int:
+        """Return the number of elements in the `Enum`."""
         return len(self.data)
 
     def member(self, element: Any) -> bool:
-        """Return True if element is present in the Enum."""
+        """Return `True` if element is present in the `Enum`."""
         return element in self
-
-    # Functions defined in `Enum` module
 
     def all(self, predicate: Predicate[T] | None = None) -> bool:
         """Return True if all elements satisfy predicate or are truthy if no predicate."""
@@ -68,15 +65,21 @@ class Enum[T](collections.UserList):
         except IndexError:
             return default
 
-    def chunk_every(self, count: int, step: int | None = None) -> Enum[Enum[T]]:
-        """Split the Enum into chunks of size `count`, advancing by `step` (defaults to count)."""
-        # Implementation note:
-        # Maybe it's worth writing it using `itertools.batched`?
+    def chunked(
+        self, count: int, step: int | None = None, discard: bool = False
+    ) -> Enum[Enum[T]]:
+        """Split the `Enum` into chunks of size `count`, advancing by `step` (defaults to `count`).
+        When `discard` is `True`, does not include the last chunk with less than `count` elements.
+        """
         chunked = []
 
         step = step or count
         for i in range(0, len(self), step):
             chunk = self[i : i + count]
+
+            if discard and len(chunk) < count:
+                break
+
             chunked.append(Enum(chunk))
 
             if i + count >= len(self):
@@ -85,14 +88,14 @@ class Enum[T](collections.UserList):
         return Enum(chunked)
 
     def concat(self) -> Enum[Any]:
-        """Given an `Enum` of iterables, concatenates them into a single `Enum`"""
+        """Given an `Enum` of iterables, concatenates them into a single `Enum`."""
         result = []
         for element in self:
             result.extend(element)
         return Enum(result)
 
     def drop(self, amount: int) -> Enum[T]:
-        """Return a new Enum with `amount` elements removed from the head (negative drops from tail)."""
+        """Return a new `Enum` with `amount` elements removed from the head (negative drops from tail)."""
         match amount:
             case 0:
                 return self
@@ -101,32 +104,45 @@ class Enum[T](collections.UserList):
             case _:  # amount < 0
                 return Enum(self[:amount])
 
+    def drop_every(self, nth: int) -> Enum[T]:
+        """Returns a list of every nth element in the `Enum` dropped, starting with the first element.
+        The first element is always dropped, unless `nth` is `0`.
+        """
+        if nth == 0:
+            return self
+        result = []
+        for i in range(len(self)):
+            if i % nth != 0:
+                result.append(self[i])
+        return Enum(result)
+
+    def drop_while(self, predicate: Predicate[T]) -> Enum[T]:
+        """Drops elements at the beginning of the `Enum` while `predicate` returns a truthy value."""
+        for i, element in enumerate(self):
+            if not predicate(element):
+                return self[i:]
+        return Enum()
+
     def each[G](self, procedure: Transform1[T, G]) -> None:
-        """Invokes the fiven `procedure` for each element."""
+        """Invokes the given `procedure` for each element.
+        Used only for producing side effects. Otherwise, use `map`.
+        """
         for element in self:
             procedure(element)
 
     def empty(self) -> bool:
-        """Return True if the Enum contains no elements."""
+        """Return `True` if `Enum` contains no elements."""
         return len(self) == 0
 
     def fetch(self, index: int) -> Result[T, str]:
-        """Attempt to return the element at index wrapped in Ok, or Error if out of range."""
+        """Attempt to return the element at index wrapped in `Ok`, or `Error` if out of range."""
         try:
             return Ok(self[index])
         except IndexError:
             return Error(f"fetch(): invalid index: {index}")
 
-    def fetch_(self, index: int) -> T:
-        """Return the element at index or raise IndexError if out of range."""
-        match self.fetch(index):
-            case Ok(element):
-                return element
-            case Error(_):
-                raise IndexError(f"fetch_(): invalid index: {index}")
-
     def map[G](self, transform: Transform1[T, G]) -> Enum[G]:
-        """Return a new Enum of transform(x) for each element x."""
+        """Return a new `Enum` of `transform(x)` for each element x."""
         return Enum([transform(x) for x in self])
 
     def map_join(self, transform: Transform1[T, str], joiner: str = "") -> str:
@@ -134,25 +150,25 @@ class Enum[T](collections.UserList):
         return joiner.join(self.map(transform))
 
     def min(self) -> T:
-        """Return the maximal element. Raise ValueError when Enum is empty."""
+        """Return the minimum. Raise `ValueError` when `Enum `is empty."""
         if self.empty():
             raise ValueError("min(): enum is empty")
         return min(self)
 
     def min_by(self, key: Transform1[T, Any]) -> T:
-        """Return the minimal element as calculated by key. Raise ValueError when Enum is empty."""
+        """Return the minimum as calculated by `key`. Raise `ValueError` when `Enum` is empty."""
         if self.empty():
             raise ValueError("min(): enum is empty")
         return min(self, key=key)
 
     def max(self) -> T:
-        """Return the maximal element. Raise ValueError when Enum is empty."""
+        """Return the maximum. Raise `ValueError` when `Enum` is empty."""
         if self.empty():
             raise ValueError("max(): enum is empty")
         return max(self)
 
     def max_by(self, key: Transform1[T, Any]) -> T:
-        """Return the maximal element as calculated by key. Raise ValueError when Enum is empty."""
+        """Return the maximum as calculated by key. Raise `ValueError` when `Enum` is empty."""
         if self.empty():
             raise ValueError("max(): enum is empty")
         return max(self, key=key)
@@ -164,8 +180,8 @@ class Enum[T](collections.UserList):
         return (self.min(), self.max())
 
     def min_max_by(self, key: Transform1[T, Any]) -> tuple[T, T]:
-        """Return both minimum and maximum of the elements as calculated by key.
-        Raise ValueError when Enum is empty.
+        """Return both minimum and maximum of `Enum` as calculated by `key`.
+        Raise `ValueError` when `Enum` is empty.
         """
         if self.empty():
             raise ValueError("min_max(): enum is empty")
@@ -180,11 +196,11 @@ class Enum[T](collections.UserList):
         return math.prod(self.map(mapper))
 
     def filter(self, predicate: Predicate[T]) -> Enum[T]:
-        """Return a new Enum containing only elements where predicate(element) is True."""
+        """Return a new `Enum` containing only elements for which `predicate(element)` is True."""
         return Enum([x for x in self if predicate(x)])
 
     def filter_map[G, E](self, transform: Transform1[T, Result[G, E]]) -> Enum[G]:
-        """Return a new Enum containing only the elements from the first list for which the given function returns Ok(_)."""
+        """Return a new `Enum` containing only the elements from the first list for which the given function returns `Ok(_)`."""
         result = []
         for element in self:
             match transform(element):
@@ -195,7 +211,7 @@ class Enum[T](collections.UserList):
         return Enum(result)
 
     def flatten(self) -> Enum:
-        """Return a new Enum which contains no inner Enum's."""
+        """Return a new `Enum` which contains no inner `Enum`'s."""
         result = []
         for element in self:
             if isinstance(element, Sequence):
@@ -205,14 +221,14 @@ class Enum[T](collections.UserList):
         return Enum(result)
 
     def find(self, predicate: Predicate[T], default: T | None = None) -> T | None:
-        """Return the first element matching predicate or default if none match."""
+        """Return the first element matching predicate or `default` if none match."""
         for element in self:
             if predicate(element):
                 return element
         return default
 
     def find_index(self, predicate: Predicate[T]) -> int | None:
-        """Return the index of the first element matching predicate or None if not found."""
+        """Return the index of the first element matching `predicate` or `None` if not found."""
         for i, element in enumerate(self):
             if predicate(element):
                 return i
@@ -221,7 +237,7 @@ class Enum[T](collections.UserList):
     def find_value[G](
         self, transform: Transform1[T, G], default: G | None = None
     ) -> G | None:
-        """Return the first truthy result of transform(element) or default if none."""
+        """Return the first truthy result of `transform` or `default` if none."""
         for element in self:
             if r := transform(element):
                 return r
@@ -239,11 +255,11 @@ class Enum[T](collections.UserList):
         return joiner.join(self)
 
     def reject(self, predicate: Predicate[T]) -> Enum[T]:
-        """Return a new Enum excluding elements for which predicate(element) is True."""
+        """Return a new `Enum` excluding elements for which `predicate` is `True`."""
         return self.filter(lambda x: not predicate(x))
 
     def reversed(self, tail: Iterable[T] | None = None):
-        """Return a new Enum with elements in reverse order, optionally appending `tail`."""
+        """Return a new `Enum` with elements in reverse order, optionally appending `tail`."""
         if tail:
             return Enum(list(reversed(self)) + list(tail))
         return Enum(list(reversed(self)))
@@ -259,22 +275,22 @@ class Enum[T](collections.UserList):
         return functools.reduce(fun, self, initial=acc)
 
     def shuffle(self) -> Enum[T]:
-        """Return a new Enum with elements randomly shuffled."""
+        """Return a new `Enum` with elements randomly shuffled."""
         copy = self.copy()
         random.shuffle(copy)
         return Enum(copy)
 
     def sorted(self) -> Enum[T]:
-        """Return a new Enum with elements sorted in ascending order."""
+        """Return a new `Enum` with elements sorted in ascending order."""
         return Enum(sorted(self))
 
     def split(self, count: int) -> tuple[Enum[T], Enum[T]]:
-        """Split into a pair of Enums: first `count` elements and the rest."""
+        """Split into a pair of `Enum`s: first `count` elements and the rest."""
         first, second = self[:count], self[count:]
         return (Enum(first), Enum(second))
 
     def split_while(self, predicate: Predicate[T]) -> tuple[Enum[T], Enum[T]]:
-        """Split into (leading elements matching predicate, remaining elements)."""
+        """Split into (leading elements matching `predicate`, remaining elements)."""
         truthy = []
         falsy = []
         for i, element in enumerate(self):
@@ -285,7 +301,7 @@ class Enum[T](collections.UserList):
         return (Enum(truthy), Enum(falsy))
 
     def split_with(self, predicate: Predicate[T]) -> tuple[Enum[T], Enum[T]]:
-        """Partition elements into a pair (matching predicate, not matching predicate)."""
+        """Partition elements into a pair (matching `predicate,` not matching `predicate`)."""
         truthy = []
         falsy = []
         for element in self:
@@ -304,7 +320,7 @@ class Enum[T](collections.UserList):
         return sum(self.map(mapper))
 
     def take(self, amount: int) -> Enum[T]:
-        """Return a new Enum with the first `amount` elements (negative takes from tail)."""
+        """Return a new `Enum` with the first `amount` elements (negative takes from tail)."""
         match amount:
             case 0:
                 return Enum([])
@@ -314,21 +330,22 @@ class Enum[T](collections.UserList):
                 return Enum(self[amount:])
 
     def take_every(self, nth: int) -> Enum[T]:
-        """Return every `nth` element as a new Enum; nth==0 returns an empty Enum."""
+        """Return every `nth` element as a new `Enum`; nth==0 returns an empty `Enum`."""
         if nth == 0:
             return Enum([])
         return Enum(self[::nth])
 
     def take_random(self, count: int) -> Enum[T]:
-        """Return `count` randomly selected elements (without replacement) as a new Enum."""
+        """Return `count` randomly selected elements (without replacement) as a new `Enum`."""
         return self.shuffle().take(count)
 
     def take_while(self, predicate: Predicate[T]) -> Enum[T]:
-        """Return elements from the start which satisfy the predicate."""
-        return Enum(itertools.takewhile(predicate, self))
+        """Return elements from the start which satisfy the `predicate`."""
+        taken = list(itertools.takewhile(predicate, self))
+        return Enum(taken)
 
     def uniq(self) -> Enum[T]:
-        """Return a new Enum, removing all duplicate elements.
+        """Return a new `Enum`, removing all duplicate elements.
         The first occurence of each element is kept and the overall order is preserved.
         """
         result = []
@@ -341,37 +358,36 @@ class Enum[T](collections.UserList):
         """Zips corresponding elements from a finite collection of enumerables into a list of tuples.
         The zipping finishes as soon as any enumerable in the given collection completes.
         """
-        return Enum(zip(self))
+        zipped = list(zip(self))
+        return Enum(zipped)
 
     def sublist(self, *indices: Any) -> Enum[Any]:
         """Extract elements at the given indices from each sub-sequence.
-
-        Assumes each element of the Enum is indexable. Returns a new Enum
-        where each element is an Enum containing values from the specified indices.
+        Assumes each element of the `Enum` is indexable. Returns a new `Enum`
+        where each element is an `Enum` containing values from the specified indices.
         """
         result = []
-        for sublist in self:
-            result.append(Enum(sublist[i] for i in indices))
+        for inner in self:
+            sublist = list(inner[i] for i in indices)
+            result.append(Enum(sublist))
         return Enum(result)
 
     def subdict(self, *keys: Any) -> Enum[Any]:
         """Extract key-value pairs for the given keys from each sub-dictionary.
-
-        Assumes each element of the Enum is a mapping. Returns a new Enum
+        Assumes each element of the `Enum` is a mapping. Returns a new `Enum`
         of dictionaries containing only the specified keys.
         """
         result = []
-        for subdict in self:
+        for inner in self:
             result.append(
-                dict((key, value) for key, value in subdict.items() if key in keys)
+                dict((key, value) for key, value in inner.items() if key in keys)
             )
         return Enum(result)
 
     def select(self, *keys: Any) -> Enum[Any]:
         """Select the values for `keys` from each element.
-
-        Assumes each element supports key-based access (e.g. dict, mapping or list).
-        Returns a new Enum containing `element[key]` for every element.
+        Assumes each element supports key-based access (e.g. `dict`, mapping or `list`).
+        Returns a new `Enum` containing `element[key]` for every element.
         When only one key given, also flattens output.
         """
         result = []
@@ -383,11 +399,11 @@ class Enum[T](collections.UserList):
         return Enum(result)
 
     def to_list(self) -> list[T]:
-        """Convert Enum to a list."""
+        """Convert `Enum` to `list`."""
         return copy.deepcopy(self.data)
 
     def to_dict(self) -> dict:
-        """Convert Enum to a dict. Assumes each element is a tuple-like pair."""
+        """Convert `Enum` to `dict`. Assumes each element is a tuple-like pair."""
         result = {}
         for key, value in self:
             result[key] = value
