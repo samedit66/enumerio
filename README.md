@@ -121,3 +121,6 @@ List of methods on `Enum` with short descriptions (roughly following the impleme
 - `zip()` — Zip corresponding elements from a collection of enumerables into an `Enum` of tuples. (Stops when the shortest enumerable is exhausted.)
 - `sublist(*indices)` — Extract elements at the given indices from each sub-sequence.
 - `subdict(*keys)` — Extract key-value pairs for the given keys from each sub-dictionary.
+- `select(*keys)` — Select the values for `keys` from each element.
+- `to_list()` — Convert `Enum` to a `list`.
+- `to_dict()` — Convert Enum to a dict. Assumes each element is a tuple-like pair.

@@ -365,10 +365,14 @@ class Enum[T](collections.UserList):
 
         Assumes each element supports key-based access (e.g. dict, mapping or list).
         Returns a new Enum containing `element[key]` for every element.
+        When only one key given, also flattens output.
         """
         result = []
         for subseq in self:
             result.append(tuple(subseq[key] for key in keys))
+
+        if len(keys) == 1:
+            return Enum(result).flatten()
         return Enum(result)
 
     def to_list(self) -> list[T]:
