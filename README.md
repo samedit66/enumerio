@@ -16,6 +16,22 @@ See [What is a Enum?](#what-is-a-enum) for implementation details.
 
 ---
 
+## Installation
+
+With `uv`:
+
+```bash
+uv add git+https://github.com/samedit66/enumerio.git
+```
+
+With `pip`:
+
+```bash
+pip install git+https://github.com/samedit66/enumerio.git
+```
+
+---
+
 ## Motivation
 
 Python has excellent built-in collection primitives, but many real-world tasks become much clearer when written as a **pipeline of transformations** rather than loops with temporary variables and flags. Implementing an `Enum`-style helper in Python is useful because:
