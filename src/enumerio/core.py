@@ -1,4 +1,5 @@
 import collections
+import copy
 import dataclasses
 import functools
 import itertools
@@ -366,3 +367,14 @@ class Enum[T](collections.UserList):
         Returns a new Enum containing `element[key]` for every element.
         """
         return Enum(element[key] for element in self)
+
+    def to_list(self) -> list[T]:
+        """Convert Enum to a list."""
+        return copy.deepcopy(self.data)
+
+    def to_dict(self) -> dict:
+        """Convert Enum to a dict. Assumes each element is a tuple-like pair."""
+        result = {}
+        for key, value in self:
+            result[key] = value
+        return result

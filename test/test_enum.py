@@ -36,3 +36,7 @@ def test_subdict():
 
 def test_select():
     assert Enum([{"a": 1, "b": 2, "c": 3}, {"a": 5, "b": 6}]).select("a") == [1, 5]
+
+
+def test_to_dict():
+    assert Enum([("a", 1), ("b", 2)]).to_dict() == {"a": 1, "b": 2}
