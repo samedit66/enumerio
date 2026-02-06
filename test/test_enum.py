@@ -1,4 +1,4 @@
-from enumerio import Enum
+from enumerio import Enum, Map
 
 
 def test_map():
@@ -42,7 +42,7 @@ def test_select():
 
 
 def test_to_dict():
-    assert Enum([("a", 1), ("b", 2)]).to_map() == {"a": 1, "b": 2}
+    assert Enum([("a", 1), ("b", 2)]).into(Map) == {"a": 1, "b": 2}
 
 
 def test_drop_every():

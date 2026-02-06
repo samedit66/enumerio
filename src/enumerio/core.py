@@ -250,7 +250,7 @@ class Enum[T](collections.UserList):
 
     def group_by[G, E](
         self, key_fun: Transform1[T, G], value_fun: Transform1[T, E] | None = None
-    ) -> dict[G, Enum[E]]:
+    ) -> Map[G, Enum[E]]:
         """Splits the `Enum` into groups based on `key_fun`.
         The result is a `dict` where each key is given by `key_fun` and each value is a list of elements given by `value_fun`.
         """
@@ -260,7 +260,7 @@ class Enum[T](collections.UserList):
                 groups[key_fun(element)].append(element)
             else:
                 groups[key_fun(element)].append(value_fun(element))
-        return groups
+        return Map(groups)
 
     def join(self, joiner: str = "") -> str:
         """Concatenate elements (assumed strings) using `joiner` and return the result."""
