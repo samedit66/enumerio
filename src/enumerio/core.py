@@ -289,9 +289,9 @@ class Enum[T](collections.UserList):
 
     def shuffle(self) -> Enum[T]:
         """Return a new `Enum` with elements randomly shuffled."""
-        copy = self.copy()
-        random.shuffle(copy)
-        return Enum(copy)
+        copied = self.copy()
+        random.shuffle(copied)
+        return Enum(copied)
 
     def sorted(self) -> Enum[T]:
         """Return a new `Enum` with elements sorted in ascending order."""
