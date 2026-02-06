@@ -411,12 +411,19 @@ class Enum[T](collections.UserList):
             return Enum(result).flatten()
         return Enum(result)
 
-    def to_map(self) -> Map:
-        """Convert `Enum` to `Map`. Assumes each element is a tuple-like pair."""
-        result = {}
-        for key, value in self:
-            result[key] = value
-        return Map(result)
+    def into[G](self, type_or_function: Callable[[Enum[T]], G]) -> G:
+        """Convert this `Enum` into another data structure or value.
+
+        Applies `type_or_function` to the current `Enum` and returns the result.
+        This is typically used at the end of a pipeline to materialize the
+        enumeration into a concrete container (e.g. `Map`, `list`, `dict`)
+        or to apply a final transformation.
+
+        Examples:
+            Enum([1, 2, 3]).into(list)
+            Enum([("a", 1), ("b", 2)]).into(Map)
+        """
+        return type_or_function(self)
 
 
 @dataclasses.dataclass(slots=True, init=False)
