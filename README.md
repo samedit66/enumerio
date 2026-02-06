@@ -11,12 +11,12 @@
 ## Usage
 
 ```python
-from enumerio import Enum
+from enumerio import Enum, _
 
-Enum(range(1, 10)).map(lambda x: x**2).filter(lambda x: x > 100).take(5).each(print)
+Enum(range(1, 10)).map(_ ** 2).filter(_ > 100).take(5).each(print)
 ```
 
-See [What is a Enum?](#what-is-a-enum) for implementation details.
+See [What is a Enum?](#what-is-a-enum) and [Underscore!?](#underscore) for implementation details.
 
 ---
 
@@ -69,6 +69,22 @@ assert Enum([1, 2, 3, 4, 5]).chunk_every(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 
 ```
 
 So you can pass `Enum` to any function which accepts a `list` as argument.
+
+---
+
+## Underscore!?
+
+For those who, like me, finds `lambda`s too long to type so-called _smarter lambdas_ were added:
+
+```python
+# The following...
+print(Enum(range(1, 10)).map(_ * 2).sum())
+
+# ...is the same as:
+print(Enum(range(1, 10)).map(lambda x: x * 2).sum())
+```
+
+This feature simplifies typing `lambda`s a lot and makes code very readable.
 
 ---
 
