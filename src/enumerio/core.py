@@ -94,13 +94,9 @@ class Enum[T](collections.UserList):
 
     def drop(self, amount: int) -> Enum[T]:
         """Return a new `Enum` with `amount` elements removed from the head (negative drops from tail)."""
-        match amount:
-            case 0:
-                return self
-            case _ if amount > 0:
-                return Enum(self[amount:])
-            case _:  # amount < 0
-                return Enum(self[:amount])
+        if amount < 0:
+            return Enum(self[:amount])
+        return Enum(self[amount:])
 
     def drop_every(self, nth: int) -> Enum[T]:
         """Returns a list of every nth element in the `Enum` dropped, starting with the first element.
@@ -333,13 +329,9 @@ class Enum[T](collections.UserList):
 
     def take(self, amount: int) -> Enum[T]:
         """Return a new `Enum` with the first `amount` elements (negative takes from tail)."""
-        match amount:
-            case 0:
-                return Enum([])
-            case _ if amount > 0:
-                return Enum(self[:amount])
-            case _:  # amount < 0
-                return Enum(self[amount:])
+        if amount < 0:
+            return Enum(self[amount:])
+        return Enum(self[:amount])
 
     def take_every(self, nth: int) -> Enum[T]:
         """Return every `nth` element as a new `Enum`; nth==0 returns an empty `Enum`."""
