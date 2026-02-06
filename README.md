@@ -1,10 +1,10 @@
 # enumerio
 
 > [!WARNING]
-> This repo is under heavy development, some functions come and go, and this `README.md`
+> This project is under heavy development, some functions come and go, and this `README.md`
 > may contain outdated information about supported features.
 
-`enumerio` is a tiny, ergonomic collection helper inspired by Elixir's `Enum` module. It wraps Python iterables into a small, list-like object (`Enum`) and provides expressive, chainable operations for common data-processing tasks.
+`enumerio` is a breath of fresh air library designed to make it easy to create pipelines of data transformations, heavily inspired by the `Elixir` porgramming language and its stunning `Enum` and `Map` modules.
 
 ---
 
@@ -13,7 +13,7 @@
 ```python
 from enumerio import Enum, _
 
-Enum(range(1, 10)).map(_ ** 2).filter(_ > 100).take(5).each(print)
+Enum(range(1, 100)).map(_ ** 2).filter(_ > 100).take(5).each(print)
 ```
 
 See [What is a Enum?](#what-is-a-enum) and [Underscore!?](#underscore) for implementation details.
@@ -38,7 +38,11 @@ pip install git+https://github.com/samedit66/enumerio.git
 
 ## Motivation
 
-Python has excellent built-in collection primitives, but many real-world tasks become much clearer when written as a **pipeline of transformations** rather than loops with temporary variables and flags. Implementing an `Enum`-style helper in Python is useful because:
+`Python` has excellent built-in collection primitives, but many real-world tasks become much clearer when written as a **pipeline of transformations** rather than loops with temporary variables and flags. 
+
+---
+
+## Highlights
 
 - **Readability**: `Enum(data).map(...).filter(...).take(3)` reads left-to-right as a data flow — the intent is clear.
 - **Composability**: Small functions compose cleanly; you can reuse pieces of a pipeline easily.
@@ -70,6 +74,8 @@ assert Enum([1, 2, 3, 4, 5]).chunk_every(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 
 
 So you can pass `Enum` to any function which accepts a `list` as argument.
 
+Similary to `Enum`, `enumerio` provides the `Map` container, which is a successor of `UserDict`.
+
 ---
 
 ## Underscore!?
@@ -88,59 +94,181 @@ This feature simplifies typing `lambda`s a lot and makes code very readable.
 
 ---
 
-## API: available functions
+## API
 
-List of methods on `Enum` with short descriptions (roughly following the implementation):
+`enumerio` provides two primary data structures:
 
-- `Enum(data)` — Construct an `Enum` from any iterable.
-- `len()` — Return number of elements.
-- `member(elem)` — True when `elem` is present.
-- `all(predicate=None)` — True if all elements satisfy `predicate` (or truthy if no predicate).
-- `any(predicate=None)` — True if any element satisfies `predicate` (or truthy if no predicate).
-- `at(index, default=None)` — Return element at `index` or `default` if out-of-range.
-- `chunk_every(count, step=None)` — Split into chunks of `count`, advancing by `step` (defaults to `count`). Returns `Enum[Enum[T]]`.
-- `drop(amount)` — Drop `amount` elements from head (negative drops from tail).
-- `each(procedure)` — Invoke `procedure` for every element (for side effects).
-- `empty()` — True if Enum is empty.
-- `fetch(index)` — Return `Ok(value)` or `Error(message)` when out-of-range.
-- `fetch_(index)` — Return element or raise `IndexError` if out-of-range.
-- `map(transform)` — Map elements with `transform`, returning a new `Enum`.
-- `map_join(transform, joiner="")` — Map elements to strings and join them.
-- `min()` — Return the minimal element; raises `ValueError` if empty.
-- `min_by(key)` — Return the element minimizing `key`; raises `ValueError` if empty.
-- `max()` — Return the maximal element; raises `ValueError` if empty.
-- `max_by(key)` — Return the element maximizing `key`; raises `ValueError` if empty.
-- `min_max()` — Return `(min, max)` pair; raises `ValueError` if empty.
-- `min_max_by(key)` — Return `(min_by, max_by)` pair based on `key`.
-- `prod()` — Product of elements (`math.prod`).
-- `prod_by(mapper)` — Product after mapping each element with `mapper`.
-- `filter(predicate)` — Keep elements that match `predicate`.
-- `filter_map(transform)` — Apply `transform` returning `Result`; collect unwrapped `Ok` values and discard `Error`s.
-- `flatten()` — Deep-flatten nested sequences into a single `Enum`.
-- `find(predicate, default=None)` — Return first matching element or `default`.
-- `find_index(predicate)` — Return index of first matching element or `None`.
-- `find_value(transform, default=None)` — Return first truthy transformed value or `default`.
-- `frequencies()` — Return `dict[element, count]` of occurrences.
-- `join(joiner="")` — Join string elements using `joiner`.
-- `reject(predicate)` — Complement of `filter` (exclude when predicate true).
-- `reversed(tail=None)` — Return reversed `Enum`, optionally appending `tail`.
-- `random()` — Return one random element (raises if empty).
-- `reduce(fun, acc)` — Reduce to a single value using `fun` and initial `acc`.
-- `shuffle()` — Return a shuffled `Enum` copy.
-- `sorted()` — Return `Enum` sorted ascending.
-- `split(count)` — Split into two `Enum`s: first `count` and the rest.
-- `split_while(predicate)` — Split into prefix satisfying predicate and remaining suffix.
-- `split_with(predicate)` — Partition into `(matching, not_matching)`.
-- `sum()` — Sum elements.
-- `sum_by(mapper)` — Sum after mapping each element with `mapper`.
-- `take(amount)` — Take first `amount` elements (negative takes from tail).
-- `take_every(nth)` — Take every `nth` element.
-- `take_random(count)` — Return `count` random elements.
-- `take_while(predicate)` — Take elements from the start while `predicate` holds.
-- `uniq()` — Return a new `Enum` preserving order but removing duplicate elements (first occurrence kept).
-- `zip()` — Zip corresponding elements from a collection of enumerables into an `Enum` of tuples. (Stops when the shortest enumerable is exhausted.)
-- `sublist(*indices)` — Extract elements at the given indices from each sub-sequence.
-- `subdict(*keys)` — Extract key-value pairs for the given keys from each sub-dictionary.
-- `select(*keys)` — Select the values for `keys` from each element.
-- `to_list()` — Convert `Enum` to a `list`.
-- `to_dict()` — Convert Enum to a dict. Assumes each element is a tuple-like pair.
+* **`Enum`** — ordered, list-like pipelines
+* **`Map`** — key/value pipelines
+
+Both are immutable-style: every transforming operation returns a **new value** instead of modifying the original container, making them safe and composable in functional chains.
+
+---
+
+# Enum
+
+An `Enum` wraps any iterable and exposes functional transformation utilities inspired by Elixir’s `Enum` module.
+
+### Construction
+
+* `Enum(data)` — Construct an `Enum` from any iterable or from positional values.
+* `size()` — Number of elements.
+
+---
+
+### Accessors
+
+* `at(index, default=None)` — Element at index or `default` if out of range.
+* `fetch(index)` — `Ok(value)` or `Error(message)` when out of range.
+
+---
+
+### Boolean checks
+
+* `all(predicate=None)` — All elements satisfy predicate (or truthy).
+* `any(predicate=None)` — Any element satisfies predicate (or truthy).
+* `empty()` — True if it contains no elements.
+* `member(elem)` — True if `elem` exists in the Enum.
+
+---
+
+### Side-effects
+
+* `each(procedure)` — Run side-effect function for every element.
+
+---
+
+### Transformation
+
+* `map(transform)` — Map elements.
+* `map_join(transform, joiner="")` — Map to string then join.
+* `filter(predicate)` — Keep matching elements.
+* `reject(predicate)` — Remove matching elements.
+* `filter_map(transform)` — Keep only `Ok(value)` results.
+* `concat()` — Concatenate an Enum of iterables.
+* `flatten()` — Recursively flatten nested iterables.
+* `uniq()` — Remove duplicates preserving order.
+* `into(type_or_function, transform=None)` — Convert to another structure (e.g. `list`, `Map`).
+* `reduce(fun, acc)` — Reduce elements into a single value.
+
+---
+
+### Searching
+
+* `find(predicate, default=None)` — First matching element.
+* `find_index(predicate)` — Index of first match.
+* `find_value(transform, default=None)` — First truthy transformed value.
+
+---
+
+### Grouping & counting
+
+* `frequencies()` — `Map[element, count]`.
+* `group_by(key_fun, value_fun=None)` — Group elements into a `Map`.
+
+---
+
+### Slicing & selection
+
+* `take(amount)` — First `amount` elements (negative = from tail).
+* `take_every(nth)` — Every nth element.
+* `take_random(count)` — Random selection.
+* `take_while(predicate)` — Take from start while predicate true.
+* `drop(amount)` — Drop first `amount` (negative from tail).
+* `drop_every(nth)` — Drop every nth element.
+* `drop_while(predicate)` — Drop prefix while predicate true.
+* `split(count)` — `(first, rest)`.
+* `split_while(predicate)` — `(prefix_matching, rest)`.
+* `split_with(predicate)` — `(matching, non_matching)`.
+* `chunked(count, step=None, discard=False)` — Chunk into sub-Enums.
+
+---
+
+### Ordering & randomness
+
+* `sorted()` — Sorted ascending.
+* `reversed(tail=None)` — Reverse order (optional appended tail).
+* `shuffle()` — Random order.
+* `random()` — Random element.
+
+---
+
+### Aggregation
+
+* `sum()` — Sum of elements.
+* `sum_by(mapper)` — Sum after mapping.
+* `prod()` — Product of elements.
+* `prod_by(mapper)` — Product after mapping.
+* `min()` — Minimum element.
+* `min_by(key)` — Minimum by key.
+* `max()` — Maximum element.
+* `max_by(key)` — Maximum by key.
+* `min_max()` — `(min, max)`
+* `min_max_by(key)` — `(min_by, max_by)`
+
+---
+
+### Working with nested data
+
+* `sublist(*indices)` — Extract indices from each sequence.
+* `subdict(*keys)` — Extract keys from each mapping.
+* `select(*keys)` — Select values by key/index.
+* `zip()` — Zip inner iterables.
+* `join(joiner="")` — Join string elements.
+
+---
+
+# Map
+
+`Map` wraps a dictionary and provides functional operations inspired by Elixir’s `Map` module.
+Many operations interoperate with `Enum` to allow pipelines across both collections.
+
+### Construction
+
+* `Map(mapping_or_pairs)` — Create from a dict or iterable of `(key, value)` pairs.
+
+---
+
+### Basic operations
+
+* `has_key(key)` — True if key exists.
+* `delete(key)` — Remove a key.
+* `drop(*keys)` — Remove multiple keys.
+* equality (`==`) — Compares underlying dictionary.
+
+---
+
+### Transforming
+
+* `map(transform)` — Apply `(key, value) -> result`, returning an `Enum`.
+* `filter(predicate)` — Keep entries where predicate true.
+* `reject(predicate)` — Remove entries where predicate true.
+
+---
+
+### Accessors
+
+* `pairs()` — `Enum[(key, value)]`
+* `to_keys()` — `Enum[key]`
+* `to_values()` — `Enum[value]`
+* `take(*keys)` — New `Map` containing only specified keys (missing keys ignored)
+
+---
+
+# Interoperability
+
+`Enum` and `Map` are designed to flow into each other:
+
+```python
+Enum(users) \
+    .group_by(lambda u: u.country) \
+    .map(lambda country, users: (country, users.size())) \
+    .into(Map)
+```
+
+Typical terminal conversions:
+
+* `Enum(...).into(list)`
+* `Enum(...).into(tuple)`
+* `Enum(...).into(Map)`
+* `Map(...).pairs().into(list)`
