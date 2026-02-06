@@ -371,7 +371,7 @@ class Enum[T](collections.UserList):
         """Zips corresponding elements from a finite collection of enumerables into a list of tuples.
         The zipping finishes as soon as any enumerable in the given collection completes.
         """
-        zipped = list(zip(self))
+        zipped = list(zip(*self))
         return Enum(zipped)
 
     def sublist(self, *indices: Any) -> Enum[Any]:
