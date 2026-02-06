@@ -1,5 +1,9 @@
 # enumerio
 
+> [!WARNING]
+> This repo is under heavy development, some functions come and go, and this `README.md`
+> may contain outdated information about supported features.
+
 `enumerio` is a tiny, ergonomic collection helper inspired by Elixir's `Enum` module. It wraps Python iterables into a small, list-like object (`Enum`) and provides expressive, chainable operations for common data-processing tasks.
 
 ---
