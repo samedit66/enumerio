@@ -1,3 +1,3 @@
-from .core import Enum
+from .core import Enum, Map
 
-__all__ = ["Enum"]
+__all__ = ["Enum", "Map"]

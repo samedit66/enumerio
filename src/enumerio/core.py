@@ -242,12 +242,12 @@ class Enum[T](collections.UserList):
                 return r
         return default
 
-    def frequencies(self) -> dict[T, int]:
+    def frequencies(self) -> Map[T, int]:
         """Return a dict mapping each distinct element to its occurrence count."""
         result = collections.defaultdict(int)
         for element in self:
             result[element] += 1
-        return result
+        return Map(result)
 
     def group_by[G, E](
         self, key_fun: Transform1[T, G], value_fun: Transform1[T, E] | None = None
@@ -393,7 +393,7 @@ class Enum[T](collections.UserList):
         result = []
         for inner in self:
             result.append(
-                dict((key, value) for key, value in inner.items() if key in keys)
+                Map((key, value) for key, value in inner.items() if key in keys)
             )
         return Enum(result)
 
@@ -411,13 +411,46 @@ class Enum[T](collections.UserList):
             return Enum(result).flatten()
         return Enum(result)
 
-    def to_list(self) -> list[T]:
-        """Convert `Enum` to `list`."""
-        return copy.deepcopy(self.data)
-
-    def to_dict(self) -> dict:
-        """Convert `Enum` to `dict`. Assumes each element is a tuple-like pair."""
+    def to_map(self) -> Map:
+        """Convert `Enum` to `Map`. Assumes each element is a tuple-like pair."""
         result = {}
         for key, value in self:
             result[key] = value
-        return result
+        return Map(result)
+
+
+@dataclasses.dataclass(slots=True, init=False)
+class Map[K, V](collections.UserDict):
+    data: dict[K, V]
+
+    def __init__(self, pairs_or_mapping: Iterable[tuple[K, V]] | dict) -> None:
+        self.data = dict(pairs_or_mapping)
+
+    def __eq__(self, other: object, /) -> bool:
+        return self.data == other
+
+    def map[G](self, transform: Callable[[K, V], G]) -> Enum[G]:
+        return Enum((transform(k, v) for k, v in self.items()))
+
+    def filter(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
+        return Map([(k, v) for k, v in self.items() if predicate(k, v)])
+
+    def reject(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
+        return Map([(k, v) for k, v in self.items() if not predicate(k, v)])
+
+    def to_keys(self) -> Enum[K]:
+        return Enum(super().keys())
+
+    def to_values(self) -> Enum[V]:
+        return Enum(super().values())
+
+    def to_enum(self) -> Enum[tuple[K, V]]:
+        return Enum(list(self.items()))
+
+    def take(self, *keys: K) -> Map[K, V]:
+        result = {}
+        for key in keys:
+            if key not in self.keys():
+                continue
+            result[key] = self[key]
+        return Map(result)
