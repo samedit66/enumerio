@@ -448,11 +448,11 @@ class Map[K, V](collections.UserDict):
 
         The given function is called with `(key, value)` for each entry.
         """
-        return self.pairs().map(transform)
+        return self.pairs().map(lambda pair: transform(pair[0], pair[1]))
 
     def filter(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
         """Return a new `Map` containing only pairs for which `predicate(key, value)` is `True`."""
-        return self.pairs().filter(predicate).into(Map)
+        return self.pairs().filter(lambda pair: predicate(pair[0], pair[1])).into(Map)
 
     def reject(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
         """Return a new `Map` excluding pairs for which `predicate(key, value)` is `True`."""
