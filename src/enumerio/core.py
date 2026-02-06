@@ -384,15 +384,16 @@ class Enum[T](collections.UserList):
         Returns a new `Enum` containing `element[key]` for every element.
         When only one key given, also flattens output.
         """
-        result = []
-        for subseq in self:
-            result.append(tuple(subseq[key] for key in keys))
-
+        result = self.map(lambda inner: Enum(keys).map(lambda k: inner[k]).into(tuple))
         if len(keys) == 1:
             return Enum(result).flatten()
         return Enum(result)
 
-    def into[G](self, type_or_function: Callable[[Enum[T]], G]) -> G:
+    def into[G, R](
+        self,
+        type_or_function: Callable[[Enum[R]], G],
+        transform: Transform1[T, R] | None = None,
+    ) -> G:
         """Convert this `Enum` into another data structure or value.
 
         Applies `type_or_function` to the current `Enum` and returns the result.
@@ -404,7 +405,9 @@ class Enum[T](collections.UserList):
             Enum([1, 2, 3]).into(list)
             Enum([("a", 1), ("b", 2)]).into(Map)
         """
-        return type_or_function(self)
+        if transform is None:
+            return type_or_function(self)
+        return type_or_function(self.map(transform))
 
 
 @dataclasses.dataclass(slots=True, init=False)
