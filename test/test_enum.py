@@ -53,3 +53,19 @@ def test_drop_every():
 
 def test_drop_while():
     assert Enum([1, 2, 3, 2, 1]).drop_while(lambda x: x < 3) == [3, 2, 1]
+
+
+def test_group_by():
+    assert Enum("ant", "buffalo", "cat", "dingo").group_by(len) == {
+        3: ["ant", "cat"],
+        5: ["dingo"],
+        7: ["buffalo"],
+    }
+
+    assert Enum("ant", "buffalo", "cat", "dingo").group_by(
+        key_fun=len, value_fun=str.upper
+    ) == {
+        3: ["ANT", "CAT"],
+        5: ["DINGO"],
+        7: ["BUFFALO"],
+    }
