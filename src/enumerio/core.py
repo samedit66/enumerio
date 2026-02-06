@@ -5,7 +5,6 @@ import functools
 import itertools
 import math
 import random
-from collections.abc import Sequence
 from typing import Any, Callable, Iterable
 
 from kungfu import Error, Ok, Result
@@ -29,8 +28,8 @@ class Enum[T](collections.UserList):
     data: list[T]
     """Underlying list which contains the elements."""
 
-    def __init__(self, *data: Sequence[T]) -> None:
-        if len(data) == 1 and isinstance(data[0], Sequence):
+    def __init__(self, *data: Iterable[T]) -> None:
+        if len(data) == 1 and isinstance(data[0], Iterable):
             self.data = list(data[0])
         else:
             self.data = list(data)
@@ -214,7 +213,7 @@ class Enum[T](collections.UserList):
         """Return a new `Enum` which contains no inner `Enum`'s."""
         result = []
         for element in self:
-            if isinstance(element, Sequence):
+            if isinstance(element, Iterable):
                 result.extend(Enum(element).flatten())
             else:
                 result.append(element)
