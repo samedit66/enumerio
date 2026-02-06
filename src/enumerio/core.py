@@ -369,23 +369,14 @@ class Enum[T](collections.UserList):
         Assumes each element of the `Enum` is indexable. Returns a new `Enum`
         where each element is an `Enum` containing values from the specified indices.
         """
-        result = []
-        for inner in self:
-            sublist = list(inner[i] for i in indices)
-            result.append(Enum(sublist))
-        return Enum(result)
+        return self.map(lambda inner: Enum(indices).map(lambda i: inner[i]))
 
     def subdict(self, *keys: Any) -> Enum[Any]:
         """Extract key-value pairs for the given keys from each sub-dictionary.
         Assumes each element of the `Enum` is a mapping. Returns a new `Enum`
         of dictionaries containing only the specified keys.
         """
-        result = []
-        for inner in self:
-            result.append(
-                Map((key, value) for key, value in inner.items() if key in keys)
-            )
-        return Enum(result)
+        return self.map(lambda inner: Enum(keys).map(lambda k: (k, inner[k])).into(Map))
 
     def select(self, *keys: Any) -> Enum[Any]:
         """Select the values for `keys` from each element.
