@@ -412,33 +412,69 @@ class Enum[T](collections.UserList):
 
 @dataclasses.dataclass(slots=True, init=False)
 class Map[K, V](collections.UserDict):
+    """A lightweight, dict-like collection with functional helpers inspired
+    by the `Enum` and `Map` modules from the Elixir programming language.
+
+    Wraps a mapping of keys `K` to values `V` and provides convenient methods
+    for transformation, filtering, and conversion, often returning `Enum`
+    or `Map` to enable fluent pipelines.
+    """
+
     data: dict[K, V]
+    """Underlying dictionary which stores key–value pairs."""
 
     def __init__(self, pairs_or_mapping: Iterable[tuple[K, V]] | dict) -> None:
+        """Create a new `Map` from key–value pairs or an existing mapping."""
         self.data = dict(pairs_or_mapping)
 
     def __eq__(self, other: object, /) -> bool:
+        """Return `True` if the underlying mapping is equal to `other`."""
         return self.data == other
 
+    def delete(self, key: K) -> Map[K, V]:
+        """Return a new `Map` with the given `key` removed, if present."""
+        return self.reject(lambda k, _v: k == key)
+
+    def drop(self, *keys: K) -> Map[K, V]:
+        """Return a new `Map` with all given `keys` removed."""
+        return self.reject(lambda k, _v: k in keys)
+
+    def has_key(self, key: K) -> bool:
+        """Return `True` if `key` exists in the `Map`."""
+        return key in self
+
     def map[G](self, transform: Callable[[K, V], G]) -> Enum[G]:
-        return Enum((transform(k, v) for k, v in self.items()))
+        """Map each key–value pair using `transform` and return the results as an `Enum`.
+
+        The given function is called with `(key, value)` for each entry.
+        """
+        return self.pairs().map(transform)
 
     def filter(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
-        return Map([(k, v) for k, v in self.items() if predicate(k, v)])
+        """Return a new `Map` containing only pairs for which `predicate(key, value)` is `True`."""
+        return self.pairs().filter(predicate).into(Map)
 
     def reject(self, predicate: Callable[[K, V], bool]) -> Map[K, V]:
-        return Map([(k, v) for k, v in self.items() if not predicate(k, v)])
+        """Return a new `Map` excluding pairs for which `predicate(key, value)` is `True`."""
+        return self.filter(lambda k, v: not predicate(k, v))
 
     def to_keys(self) -> Enum[K]:
+        """Return an `Enum` of all keys in the `Map`."""
         return Enum(super().keys())
 
     def to_values(self) -> Enum[V]:
+        """Return an `Enum` of all values in the `Map`."""
         return Enum(super().values())
 
-    def to_enum(self) -> Enum[tuple[K, V]]:
-        return Enum(list(self.items()))
+    def pairs(self) -> Enum[tuple[K, V]]:
+        """Return an `Enum` of `(key, value)` pairs."""
+        return Enum(self.items())
 
     def take(self, *keys: K) -> Map[K, V]:
+        """Return a new `Map` containing only the given `keys` that exist in the `Map`.
+
+        Keys that are not present are silently ignored.
+        """
         result = {}
         for key in keys:
             if key not in self.keys():
