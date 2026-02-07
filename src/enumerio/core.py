@@ -386,14 +386,11 @@ class Enum[T](collections.UserList):
             return Enum(result).flatten()
         return Enum(result)
 
-    def into[G, R](
-        self,
-        type_or_function: Callable[[Enum[R]], G],
-        transform: Transform1[T, R] | None = None,
-    ) -> G:
-        """Convert this `Enum` into another data structure or value.
+    def into(self, convert, mapper=None):
+        """Convert this `Enum` into another data structure or value,
+        optionally applying `mapper` before calling `convert`.
 
-        Applies `type_or_function` to the current `Enum` and returns the result.
+        Applies `convert` to the current `Enum` and returns the result.
         This is typically used at the end of a pipeline to materialize the
         enumeration into a concrete container (e.g. `Map`, `list`, `dict`)
         or to apply a final transformation.
@@ -402,9 +399,9 @@ class Enum[T](collections.UserList):
             Enum([1, 2, 3]).into(list)
             Enum([("a", 1), ("b", 2)]).into(Map)
         """
-        if transform is None:
-            return type_or_function(self)
-        return type_or_function(self.map(transform))
+        if mapper is None:
+            return convert(self)
+        return convert(self.map(mapper))
 
 
 @dataclasses.dataclass(slots=True, init=False)
