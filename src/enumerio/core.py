@@ -12,8 +12,6 @@ type Transform1[T, G] = Callable[[T], G]
 
 type Predicate[T] = Transform1[T, bool]
 
-type Number = int | float  # TODO: maybe use `numbers` package instead
-
 
 @dataclasses.dataclass(slots=True, init=False)
 class Enum[T](collections.UserList):
@@ -181,11 +179,11 @@ class Enum[T](collections.UserList):
             raise ValueError("min_max(): enum is empty")
         return (self.min_by(key), self.max_by(key))
 
-    def prod(self) -> Number:
+    def prod(self) -> int:
         """Return the product of elements."""
         return math.prod(self)
 
-    def prod_by(self, mapper: Transform1[T, Number]) -> Number:
+    def prod_by(self, mapper: Transform1[T, int]) -> int:
         """Return the product of elements, mapping each element first."""
         return math.prod(self.map(mapper))
 
@@ -317,11 +315,11 @@ class Enum[T](collections.UserList):
                 falsy.append(element)
         return (Enum(truthy), Enum(falsy))
 
-    def sum(self) -> Number:
+    def sum(self) -> int:
         """Return the sum of elements."""
         return sum(self)
 
-    def sum_by(self, mapper: Transform1[T, Number]) -> Number:
+    def sum_by(self, mapper: Transform1[T, int]) -> int:
         """Return the sum of elements mapping each element first."""
         return sum(self.map(mapper))
 
