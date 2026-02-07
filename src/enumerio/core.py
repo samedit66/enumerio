@@ -237,8 +237,8 @@ class Enum[T](collections.UserList):
                 return r
         return default
 
-    def frequencies(self) -> Map[T, int]:
-        """Return a dict mapping each distinct element to its occurrence count."""
+    def freq(self) -> Map[T, int]:
+        """Return a `Map` mapping each distinct element to its occurrence count."""
         result = collections.defaultdict(int)
         for element in self:
             result[element] += 1
@@ -266,11 +266,9 @@ class Enum[T](collections.UserList):
         """Return a new `Enum` excluding elements for which `predicate` is `True`."""
         return self.filter(lambda x: not predicate(x))
 
-    def reversed(self, tail: Iterable[T] | None = None):
-        """Return a new `Enum` with elements in reverse order, optionally appending `tail`."""
-        if tail:
-            return Enum(list(reversed(self)) + list(tail))
-        return Enum(list(reversed(self)))
+    def rev(self) -> Enum[T]:
+        """Return a new `Enum` with elements in reverse order."""
+        return Enum(reversed(self))
 
     def random(self) -> T:
         """Return a randomly selected element. Raises `ValueError` when `Enum` is empty."""
