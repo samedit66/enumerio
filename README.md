@@ -57,7 +57,7 @@ Even though Python already has `map`/`filter`/list comprehensions and libraries 
 
 Pipeline code focuses on the transformation steps rather than control flow. This makes code easier to reason about, test, and refactor:
 
-- Break complex processing into named steps (`.map(...)`, `.filter(...)`, `.frequencies()`) that are each easy to test.
+- Break complex processing into named steps (`.map(...)`, `.filter(...)`, `.freq()`) that are each easy to test.
 - Move from imperative loops to functional building blocks; that helps when reasoning about edge cases (empty lists, single element, etc.).
 - Pipelines encourage use of small pure functions that are reusable across projects.
 
@@ -69,7 +69,7 @@ The main building block is a `Enum`. It's basically a successor of `UserList` (i
 
 ```python
 assert Enum([1, 2, 3]).map(lambda x: x**2) == [1, 4, 9]
-assert Enum([1, 2, 3, 4, 5]).chunk_every(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
+assert Enum([1, 2, 3, 4, 5]).chunked(3, 1) == [[1, 2, 3], [2, 3, 4], [3, 4, 5]]
 ```
 
 So you can pass `Enum` to any function which accepts a `list` as argument.
@@ -165,7 +165,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 
 ### Grouping & counting
 
-* `frequencies()` — `Map[element, count]`.
+* `freq()` — `Map[element, count]`.
 * `group_by(key_fun, value_fun=None)` — Group elements into a `Map`.
 
 ---
@@ -189,7 +189,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 ### Ordering & randomness
 
 * `sorted()` — Sorted ascending.
-* `reversed(tail=None)` — Reverse order (optional appended tail).
+* `rev()` — Reverse order.
 * `shuffle()` — Random order.
 * `random()` — Random element.
 
