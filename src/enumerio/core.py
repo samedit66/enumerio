@@ -302,6 +302,7 @@ class Enum[T](collections.UserList):
                 truthy.append(element)
             else:
                 falsy.extend(self[i:])
+                break
         return (Enum(truthy), Enum(falsy))
 
     def split_with(self, predicate: Predicate[T]) -> tuple[Enum[T], Enum[T]]:
