@@ -590,13 +590,23 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 1, 2, 2, 3).uniq()
         Enum(data=[1, 2, 3])
         """
+        return self.uniq_by(identity)
+
+    def uniq_by[G](self, key_fun: Transform1[T, G]) -> Enum[G]:
+        """Remove duplicates based on `key_fun` preserving order.
+
+        >>> Enum("aaa", "bbb", "cc", "dd").uniq_by(len)
+        Enum(data=['aaa', 'cc'])
+        """
         result = []
-        for element in self:
-            if element not in result:
+        keys = []
+        for key, element in zip(self.map(key_fun), self):
+            if key not in keys:
+                keys.append(key)
                 result.append(element)
         return Enum(result)
 
-    def zip(self) -> Enum[Tuple]:
+    def zip(self) -> Enum[tuple]:
         """Zip inner iterables together.
 
         >>> Enum([1, 2], [3, 4]).zip()

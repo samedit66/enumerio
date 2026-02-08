@@ -151,6 +151,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 * `concat()` — Concatenate an Enum of iterables.
 * `flatten()` — Recursively flatten nested iterables.
 * `uniq()` — Remove duplicates preserving order.
+* `uniq_by(key_fun)` — Remove duplicates based on `key_fun` preserving order.
 * `into(type_or_function, transform=None)` — Convert to another structure (e.g. `list`, `Map`).
 * `reduce(fun, acc)` — Reduce elements into a single value.
 * `with_index(start)` — Map elements into 2-element tuples (index, element).
