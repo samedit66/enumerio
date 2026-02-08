@@ -4,7 +4,7 @@ import functools
 import itertools
 import math
 import random
-from typing import Any, Callable, Iterable, Tuple
+from typing import Any, Callable, Iterable
 
 from kungfu import Error, Ok, Result
 
@@ -604,7 +604,7 @@ class Enum[T](collections.UserList):
         """
         return Enum(zip(*self))
 
-    def zip_with(self, zipper) -> Enum[Tuple]:
+    def zip_with(self, zipper) -> Enum[tuple]:
         """Zip and transform elements.
 
         >>> Enum([1, 2],[3, 4]).zip_with(lambda a, b: a + b)
@@ -640,7 +640,7 @@ class Enum[T](collections.UserList):
         return Enum(result)
 
     def into(self, convert, mapper=None):
-        """Convert Enum into another container.
+        """Convert `Enum` into another container.
 
         >>> Enum(1,2,3).into(list)
         [1, 2, 3]
