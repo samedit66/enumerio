@@ -4,7 +4,7 @@ import functools
 import itertools
 import math
 import random
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Tuple
 
 from kungfu import Error, Ok, Result
 
@@ -355,11 +355,17 @@ class Enum[T](collections.UserList):
                 result.append(element)
         return Enum(result)
 
-    def zip(self) -> Enum[Any]:
+    def zip(self) -> Enum[Tuple]:
         """Zips corresponding elements from a finite collection of enumerables into a list of tuples.
         The zipping finishes as soon as any enumerable in the given collection completes.
         """
         return Enum(zip(*self))
+
+    def zip_with(self, zipper) -> Enum[Tuple]:
+        """Zips corresponding elements from two enumerables into a list,
+        transforming them with the zip_fun function as it goes.
+        """
+        return self.zip().map(lambda t: zipper(*t))
 
     def sublist(self, *indices: Any) -> Enum[Any]:
         """Extract elements at the given indices from each sub-sequence.
