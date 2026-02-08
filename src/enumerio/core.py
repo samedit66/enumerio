@@ -649,6 +649,16 @@ class Enum[T](collections.UserList):
             return convert(self)
         return convert(self.map(mapper))
 
+    def with_index(self, start: int = 0) -> Enum[tuple[int, T]]:
+        """Transform each element into a 2-element tuple (index, element).
+
+        >>> Enum("abc").with_index()
+        Enum(data=[(0, 'a'), (1, 'b'), (2, 'c')])
+        >>> Enum("abc").with_index(start=1)
+        Enum(data=[(1, 'a'), (2, 'b'), (3, 'c')])
+        """
+        return Enum(enumerate(self, start=start))
+
 
 @dataclasses.dataclass(slots=True, init=False)
 class Map[K, V](collections.UserDict):
