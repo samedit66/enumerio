@@ -128,7 +128,7 @@ class Enum[T](collections.UserList):
 
         return Enum(chunked)
 
-    def concat(self) -> Enum[Any]:
+    def concat[G](self) -> Enum[G]:
         """Given an `Enum` of iterables, concatenates them into a single `Enum`.
 
         >>> Enum([1, 2, 3], [4, 5, 6]).concat()
@@ -345,6 +345,14 @@ class Enum[T](collections.UserList):
             else:
                 result.append(element)
         return Enum(result)
+
+    def flat_map[G](self, transform: Transform1[T, Iterable[G]]) -> Enum[G]:
+        """Transform each element into an `Iterable` and concat them after.
+
+        >>> Enum([1, 3], [4, 6]).flat_map(lambda l: range(l[0], l[1]+1))
+        Enum(data=[1, 2, 3, 4, 5, 6])
+        """
+        return self.map(transform).concat()
 
     def find(self, predicate: Predicate[T], default: T | None = None) -> T | None:
         """Return first matching element or `default`.
