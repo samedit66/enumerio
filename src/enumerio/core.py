@@ -13,6 +13,11 @@ type Transform1[T, G] = Callable[[T], G]
 type Predicate[T] = Transform1[T, bool]
 
 
+def identity(x: Any) -> Any:
+    """Return the given argument back."""
+    return x
+
+
 @dataclasses.dataclass(slots=True, init=False)
 class Enum[T](collections.UserList):
     """A lightweight, list-like collection with convenient functional helpers inspired
@@ -397,9 +402,17 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 1, 2, 3, 3, 3).freq()
         Map(data={1: 2, 2: 1, 3: 3})
         """
+        return self.freq_by(identity)
+
+    def freq_by[G](self, key_fun: Transform1[T, G]) -> Map[G, int]:
+        """Count occurrences of each element transformed by `key_fun`.
+
+        >>> Enum("a", "A", "b", "B").freq_by(str.upper)
+        Map(data={'A': 2, 'B': 2})
+        """
         result = collections.defaultdict(int)
         for element in self:
-            result[element] += 1
+            result[key_fun(element)] += 1
         return Map(result)
 
     def group_by[G, E](

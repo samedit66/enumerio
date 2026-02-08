@@ -166,6 +166,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 ### Grouping & counting
 
 * `freq()` — `Map[element, count]`.
+* `freq_by(key_fun)` — Apply `key_fun` to each element and then count them.
 * `group_by(key_fun, value_fun=None)` — Group elements into a `Map`.
 
 ---
