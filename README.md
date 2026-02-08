@@ -144,6 +144,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 
 * `map(transform)` — Map elements.
 * `map_join(transform, joiner="")` — Map to string then join.
+* `flat_map(transform)` — Map elements into iterables then concat them.
 * `filter(predicate)` — Keep matching elements.
 * `reject(predicate)` — Remove matching elements.
 * `filter_map(transform)` — Keep only `Ok(value)` results.
