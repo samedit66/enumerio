@@ -92,7 +92,7 @@ print(Enum(range(1, 10)).map(lambda x: x * 2).sum())
 
 This feature simplifies typing `lambda`s a lot and makes code very readable.
 
-Unfortunately, they are very limiting _right now_: just simple arithmetic and nothing more.
+Unfortunately, they are very limited _right now_: just simple arithmetic and nothing more.
 
 ---
 
