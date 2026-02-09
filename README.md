@@ -216,9 +216,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 
 ### Working with nested data
 
-* `sublist(*indices)` — Extract indices from each sequence.
-* `subdict(*keys)` — Extract keys from each mapping.
-* `select(*keys)` — Select values by key/index.
+* `pluck(*keys)` — Select values by key/index.
 * `zip()` — Zip inner iterables.
 * `zip_with(zipper)` — Zip inner iterables, transforming them with `zipper`.
 * `join(joiner="")` — Join string elements.

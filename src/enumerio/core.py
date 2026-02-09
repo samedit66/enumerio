@@ -3,6 +3,7 @@ import dataclasses
 import functools
 import itertools
 import math
+import operator
 import random
 from typing import Any, Callable, Iterable
 
@@ -183,10 +184,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 1, 1).drop_while(lambda x: x == 1)
         Enum(data=[])
         """
-        for i, element in enumerate(self):
-            if not predicate(element):
-                return self[i:]
-        return Enum()
+        return Enum(itertools.dropwhile(predicate, self))
 
     def each[G](self, procedure: Transform1[T, G]) -> None:
         """Call `procedure` for every element (side effects only).
@@ -228,7 +226,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3).map(lambda x: x * 2)
         Enum(data=[2, 4, 6])
         """
-        return Enum(transform(x) for x in self)
+        return Enum(map(transform, self))
 
     def map_join(self, transform: Transform1[T, str], joiner: str = "") -> str:
         """Map elements to strings and join them.
@@ -320,7 +318,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3, 4).filter(lambda x: x % 2 == 0)
         Enum(data=[2, 4])
         """
-        return Enum([x for x in self if predicate(x)])
+        return Enum(filter(predicate, self))
 
     def filter_map[G, E](self, transform: Transform1[T, Result[G, E]]) -> Enum[G]:
         """Keep only `Ok` values returned by `transform`.
@@ -416,7 +414,9 @@ class Enum[T](collections.UserList):
         return Map(result)
 
     def group_by[G, E](
-        self, key_fun: Transform1[T, G], value_fun: Transform1[T, E] | None = None
+        self,
+        key_fun: Transform1[T, G] = identity,
+        value_fun: Transform1[T, E] = identity,
     ) -> Map[G, Enum[E]]:
         """Group elements by key function.
 
@@ -425,10 +425,7 @@ class Enum[T](collections.UserList):
         """
         groups = collections.defaultdict(Enum)
         for element in self:
-            if value_fun is None:
-                groups[key_fun(element)].append(element)
-            else:
-                groups[key_fun(element)].append(value_fun(element))
+            groups[key_fun(element)].append(value_fun(element))
         return Map(groups)
 
     def join(self, joiner: str = "") -> str:
@@ -497,8 +494,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3, 4).split(2)
         (Enum(data=[1, 2]), Enum(data=[3, 4]))
         """
-        first, second = self[:count], self[count:]
-        return (Enum(first), Enum(second))
+        return (self[:count], self[count:])
 
     def split_while(self, predicate: Predicate[T]) -> tuple[Enum[T], Enum[T]]:
         """Split while `predicate` holds.
@@ -581,8 +577,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3, 1).take_while(lambda x: x < 3)
         Enum(data=[1, 2])
         """
-        taken = list(itertools.takewhile(predicate, self))
-        return Enum(taken)
+        return Enum(itertools.takewhile(predicate, self))
 
     def uniq(self) -> Enum[T]:
         """Remove duplicates preserving order.
@@ -622,32 +617,17 @@ class Enum[T](collections.UserList):
         """
         return self.zip().map(lambda t: zipper(*t))
 
-    def sublist(self, *indices: Any) -> Enum[Any]:
-        """Extract indices from each inner sequence.
-
-        >>> Enum([1, 2, 3], [4, 5, 6]).sublist(0, 2)
-        Enum(data=[Enum(data=[1, 3]), Enum(data=[4, 6])])
-        """
-        return self.map(lambda inner: Enum(indices).map(lambda i: inner[i]))
-
-    def subdict(self, *keys: Any) -> Enum[Any]:
-        """Extract keys from each inner mapping.
-
-        >>> Enum({"a": 1, "b": 2},{"a": 3, "b": 4}).subdict("a")
-        Enum(data=[Map(data={'a': 1}), Map(data={'a': 3})])
-        """
-        return self.map(lambda inner: Enum(keys).map(lambda k: (k, inner[k])).into(Map))
-
-    def select(self, *keys: Any) -> Enum[Any]:
+    def pluck(self, *keys: Any) -> Enum[Any]:
         """Select key values from each element.
 
-        >>> Enum({"a": 1}, {"a": 2}).select("a")
+        >>> Enum([1, 2, 3], [4, 5, 6]).pluck(0)
+        Enum(data=[1, 4])
+        >>> Enum([1, 2, 3], [4, 5, 6]).pluck(2, 0)
+        Enum(data=[(3, 1), (6, 4)])
+        >>> Enum({"a": 1}, {"a": 2}).pluck("a")
         Enum(data=[1, 2])
         """
-        result = self.map(lambda inner: Enum(keys).map(lambda k: inner[k]).into(tuple))
-        if len(keys) == 1:
-            return Enum(result).flatten()
-        return Enum(result)
+        return self.map(operator.itemgetter(*keys))
 
     def into(self, convert, mapper=None):
         """Convert `Enum` into another container.
@@ -668,6 +648,8 @@ class Enum[T](collections.UserList):
         Enum(data=[(1, 'a'), (2, 'b'), (3, 'c')])
         """
         return Enum(enumerate(self, start=start))
+
+    def tap(self, interceptor): ...
 
 
 @dataclasses.dataclass(slots=True, init=False)
