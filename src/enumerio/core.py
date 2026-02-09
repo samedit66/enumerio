@@ -5,7 +5,7 @@ import itertools
 import math
 import operator
 import random
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Self
 
 from kungfu import Error, Ok, Result
 
@@ -649,7 +649,16 @@ class Enum[T](collections.UserList):
         """
         return Enum(enumerate(self, start=start))
 
-    def tap(self, interceptor): ...
+    def tap(self, interceptor: Callable[[Enum[T]], Any]) -> Self:
+        """Taps into a method chain, in order to perform some operation,
+        returns the same object without changing it.
+
+        >>> Enum(1, 2, 3).tap(print).sum()
+        Enum(data=[1, 2, 3])
+        6
+        """
+        interceptor(self)
+        return self
 
 
 @dataclasses.dataclass(slots=True, init=False)

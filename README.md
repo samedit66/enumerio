@@ -137,6 +137,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 ### Side-effects
 
 * `each(procedure)` — Run side-effect function for every element.
+* `tap(interceptor)` — Perform side-effect function `interceptor(self)` and return `self`.
 
 ---
 
