@@ -4,7 +4,7 @@
 > This project is under heavy development, some functions come and go, and this `README.md`
 > may contain outdated information about supported features.
 
-`enumerio` is a breath of fresh air library designed to make it easy to create pipelines of data transformations, heavily inspired by the `Elixir` porgramming language and its stunning `Enum` and `Map` modules.
+`enumerio` is a breath of fresh air library designed to make it easy to create pipelines of data transformations, heavily inspired by the `Elixir` programming language and its stunning `Enum` and `Map` modules.
 
 ---
 
