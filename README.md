@@ -156,6 +156,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 * `into(type_or_function, transform=None)` — Convert to another structure (e.g. `list`, `Map`).
 * `reduce(fun, acc)` — Reduce elements into a single value.
 * `with_index(start)` — Map elements into 2-element tuples (index, element).
+* `starmap(transform)` — Unpack each element and pass them to `transform`.
 
 ---
 

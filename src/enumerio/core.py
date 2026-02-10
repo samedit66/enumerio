@@ -660,6 +660,14 @@ class Enum[T](collections.UserList):
         interceptor(self)
         return self
 
+    def starmap(self, transform):
+        """Treat each `Enum` element as arguments to unpack and then pass to `transform`.
+
+        >>> Enum([1, 2], [3, 4], [5, 6]).starmap(lambda a, b: a + b)
+        Enum(data=[3, 7, 11])
+        """
+        return Enum(itertools.starmap(transform, self))
+
 
 @dataclasses.dataclass(slots=True, init=False)
 class Map[K, V](collections.UserDict):
