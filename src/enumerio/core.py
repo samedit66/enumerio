@@ -140,10 +140,7 @@ class Enum[T](collections.UserList):
         >>> Enum([1, 2, 3], [4, 5, 6]).concat()
         Enum(data=[1, 2, 3, 4, 5, 6])
         """
-        result = []
-        for element in self:
-            result.extend(element)
-        return Enum(result)
+        return Enum(itertools.chain.from_iterable(self))
 
     def drop(self, amount: int) -> Enum[T]:
         """Return a new `Enum` with `amount` elements removed from the head (negative drops from tail).
@@ -156,8 +153,8 @@ class Enum[T](collections.UserList):
         Enum(data=[1, 2, 3])
         """
         if amount < 0:
-            return Enum(self[:amount])
-        return Enum(self[amount:])
+            return self[:amount]
+        return self[amount:]
 
     def drop_every(self, nth: int) -> Enum[T]:
         """Returns a list of every nth element in the `Enum` dropped, starting with the first element.
