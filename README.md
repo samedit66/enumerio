@@ -253,6 +253,7 @@ Many operations interoperate with `Enum` to allow pipelines across both collecti
 * `map(transform)` — Apply `(key, value) -> result`, returning an `Enum`.
 * `filter(predicate)` — Keep entries where predicate true.
 * `reject(predicate)` — Remove entries where predicate true.
+* `flip()` — Swap keys with values.
 
 ---
 

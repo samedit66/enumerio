@@ -801,3 +801,11 @@ class Map[K, V](collections.UserDict):
                 continue
             result[key] = self[key]
         return Map(result)
+
+    def flip(self) -> Map[V, K]:
+        """Swaps keys with values.
+
+        >>> Map({"a": 1, "b": 2}).flip()
+        Map(data={1: 'a', 2: 'b'})
+        """
+        return self.pairs().starmap(lambda k, v: (v, k)).into(Map)
