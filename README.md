@@ -127,8 +127,10 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 
 ### Boolean checks
 
-* `all(predicate=None)` — All elements satisfy predicate (or truthy).
-* `any(predicate=None)` — Any element satisfies predicate (or truthy).
+* `all(predicate=identity)` — All elements satisfy predicate (or truthy).
+* `any(predicate=identity)` — Any element satisfies predicate (or truthy).
+* `none(predicate=identity)` — No element satisfies predicate (or falsy).
+* `one(predicate=identity)` — Exactly one element satisfies predicate (or truthy).
 * `empty()` — True if it contains no elements.
 * `has(elem)` — True if `elem` exists in the Enum.
 

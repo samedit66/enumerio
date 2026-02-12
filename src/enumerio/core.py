@@ -60,7 +60,7 @@ class Enum[T](collections.UserList):
         """
         return element in self
 
-    def all(self, predicate: Predicate[T] | None = None) -> bool:
+    def all(self, predicate: Predicate[T] = identity) -> bool:
         """Return `True` if all elements satisfy predicate or are truthy if no predicate,
         `False` otherwise.
 
@@ -71,11 +71,9 @@ class Enum[T](collections.UserList):
         >>> Enum(True, False, True).all()
         False
         """
-        if predicate:
-            return all(self.map(predicate))
-        return all(self.data)
+        return all(self.map(predicate))
 
-    def any(self, predicate: Predicate[T] | None = None) -> bool:
+    def any(self, predicate: Predicate[T] = identity) -> bool:
         """Return `True` if any element satisfies predicate or is truthy if no predicate.
         `False` otherwise.
 
@@ -86,9 +84,7 @@ class Enum[T](collections.UserList):
         >>> Enum(True, False, True).any()
         True
         """
-        if predicate:
-            return any(self.map(predicate))
-        return any(self.data)
+        return any(self.map(predicate))
 
     def at(self, index: int, default: T | None = None) -> T | None:
         """Return element at `index` or `default` if `index` is out of range.
@@ -672,6 +668,30 @@ class Enum[T](collections.UserList):
         Enum(data=[(1, 2), (2, 3), (3, 4), (4, 5)])
         """
         return Enum(itertools.pairwise(self))
+
+    def none(self, predicate: Predicate[T] = identity) -> bool:
+        """Return `True` if no element satisfies predicate, otherwise - `False`.
+
+        >>> Enum(1, 2, 3).none(lambda x: x > 5)
+        True
+        >>> Enum(1, 2, 3).none(lambda x: x == 2)
+        False
+        """
+        if predicate is None:
+            return all(not element for element in self)
+        return all(not predicate(element) for element in self)
+
+    def one(self, predicate: Predicate[T] = identity) -> bool:
+        """Return `True` if exactly one element satisfies `predicate`, otherwise - `False`.
+
+        >>> Enum(1, 2, 3).one(lambda x: x > 0)
+        False
+        >>> Enum(1, 2, 3).one(lambda x: x == 2)
+        True
+        >>> Enum(1, 2, 3).one(lambda x: x > 5)
+        False
+        """
+        return self.map(predicate).sum() == 1
 
 
 @dataclasses.dataclass(slots=True, init=False)
