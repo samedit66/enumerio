@@ -665,6 +665,14 @@ class Enum[T](collections.UserList):
         """
         return Enum(itertools.starmap(transform, self))
 
+    def pairwise(self) -> Enum[tuple[T, T]]:
+        """Returns a new `Enum` of overlapping pairs.
+
+        >>> Enum(1, 2, 3, 4, 5).pairwise()
+        Enum(data=[(1, 2), (2, 3), (3, 4), (4, 5)])
+        """
+        return Enum(itertools.pairwise(self))
+
 
 @dataclasses.dataclass(slots=True, init=False)
 class Map[K, V](collections.UserDict):

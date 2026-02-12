@@ -189,6 +189,7 @@ An `Enum` wraps any iterable and exposes functional transformation utilities ins
 * `split_while(predicate)` — `(prefix_matching, rest)`.
 * `split_with(predicate)` — `(matching, non_matching)`.
 * `chunked(count, step=None, discard=False)` — Chunk into sub-Enums.
+* `pairwise()` — Overlapping pairs. Same as `chunked(count=2, step=1)`.
 
 ---
 
