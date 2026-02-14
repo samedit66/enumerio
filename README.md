@@ -9,6 +9,8 @@
 
 `enumerio` is a breath of fresh air library designed to make it easy to create pipelines of data transformations, heavily inspired by the `Elixir` programming language and its stunning `Enum` and `Map` modules.
 
+`enumerio` also includes rocking `Option` and `Result` monads for everyday, practical functional programming: safe handling of missing values and exceptions, with pattern-matching friendly types and simple decorators for ergonomic use.
+
 ---
 
 ## Usage

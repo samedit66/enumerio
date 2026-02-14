@@ -7,9 +7,7 @@ authors = [
     { name = "samedit66", email = "samedit66@yandex.ru" }
 ]
 requires-python = ">=3.14"
-dependencies = [
-    "kungfu-fp>=1.0.0",
-]
+dependencies = []
 
 [build-system]
 requires = ["uv_build>=0.9.17,<0.10.0"]

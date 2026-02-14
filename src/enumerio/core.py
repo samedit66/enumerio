@@ -7,7 +7,7 @@ import operator
 import random
 from typing import Any, Callable, Iterable, Self
 
-from kungfu import Error, Ok, Result
+from enumerio import option, result
 
 type Transform1[T, G] = Callable[[T], G]
 
@@ -24,8 +24,7 @@ class Enum[T](collections.UserList):
     """A lightweight, list-like collection with convenient functional helpers inspired
     by the `Enum` module from the Elixir programming language.
 
-    Wraps an iterable of `T` and provides methods for mapping, filtering,
-    slicing and other common enumeration operations.
+    Wraps an iterable of `T` and provides methods for mapping, filtering, slicing and other common enumeration operations.
     """
 
     data: list[T]
@@ -163,11 +162,11 @@ class Enum[T](collections.UserList):
         """
         if nth == 0:
             return self
-        result = []
+        r = []
         for i in range(len(self)):
             if i % nth != 0:
-                result.append(self[i])
-        return Enum(result)
+                r.append(self[i])
+        return Enum(r)
 
     def drop_while(self, predicate: Predicate[T]) -> Enum[T]:
         """Remove leading elements while `predicate` is True.
@@ -200,18 +199,18 @@ class Enum[T](collections.UserList):
         """
         return len(self) == 0
 
-    def fetch(self, index: int) -> Result[T, str]:
+    def fetch(self, index: int) -> result.Result[T, str]:
         """Return `Ok(value)` at `index` or `Error` if out of range.
 
         >>> Enum(10, 20).fetch(1)
-        <Result: Ok(20)>
+        Ok(20)
         >>> Enum(10, 20).fetch(5)
-        <Result: Error('fetch(): invalid index: 5')>
+        Err('fetch(): invalid index: 5')
         """
         try:
-            return Ok(self[index])
+            return result.Ok(self[index])
         except IndexError:
-            return Error(f"fetch(): invalid index: {index}")
+            return result.Err(f"fetch(): invalid index: {index}")
 
     def map[G](self, transform: Transform1[T, G]) -> Enum[G]:
         """Transform each element and return a new `Enum`.
@@ -229,65 +228,65 @@ class Enum[T](collections.UserList):
         """
         return joiner.join(self.map(transform))
 
+    @option.maybe
     def min(self) -> T:
         """Return the smallest element.
 
         >>> Enum(3, 1, 2).min()
-        1
+        Some(value=1)
+        >>> Enum().min()
+        Nothing()
         """
-        if self.empty():
-            raise ValueError("min(): enum is empty")
         return min(self)
 
+    @option.maybe
     def min_by(self, key: Transform1[T, Any]) -> T:
         """Return the element with the smallest key value.
 
         >>> Enum("aaa", "b", "cc").min_by(len)
-        'b'
+        Some(value='b')
         """
-        if self.empty():
-            raise ValueError("min(): enum is empty")
         return min(self, key=key)
 
+    @option.maybe
     def max(self) -> T:
         """Return the largest element.
 
         >>> Enum(3, 1, 2).max()
-        3
+        Some(value=3)
         """
-        if self.empty():
-            raise ValueError("max(): enum is empty")
         return max(self)
 
+    @option.maybe
     def max_by(self, key: Transform1[T, Any]) -> T:
         """Return the element with the largest key value.
 
         >>> Enum("aaa", "b", "cc").max_by(len)
-        'aaa'
+        Some(value='aaa')
         """
-        if self.empty():
-            raise ValueError("max(): enum is empty")
         return max(self, key=key)
 
-    def min_max(self) -> tuple[T, T]:
+    def min_max(self) -> option.Option[tuple[T, T]]:
         """Return (minimum, maximum).
 
         >>> Enum(3, 1, 5, 2).min_max()
-        (1, 5)
+        Some(value=(1, 5))
         """
-        if self.empty():
-            raise ValueError("min_max(): enum is empty")
-        return (self.min(), self.max())
+        match (self.min(), self.max()):
+            case (option.Some(a), option.Some(b)):
+                return option.Some((a, b))
+        return option.Nothing()
 
-    def min_max_by(self, key: Transform1[T, Any]) -> tuple[T, T]:
+    def min_max_by(self, key: Transform1[T, Any]) -> option.Option[tuple[T, T]]:
         """Return (min_by, max_by) using key function.
 
         >>> Enum("a", "bbb", "cc").min_max_by(len)
-        ('a', 'bbb')
+        Some(value=('a', 'bbb'))
         """
-        if self.empty():
-            raise ValueError("min_max(): enum is empty")
-        return (self.min_by(key), self.max_by(key))
+        match (self.min_by(key), self.max_by(key)):
+            case (option.Some(a), option.Some(b)):
+                return option.Some((a, b))
+        return option.Nothing()
 
     def prod(self) -> int:
         """Return the product of elements.
@@ -313,20 +312,22 @@ class Enum[T](collections.UserList):
         """
         return Enum(filter(predicate, self))
 
-    def filter_map[G, E](self, transform: Transform1[T, Result[G, E]]) -> Enum[G]:
+    def filter_map[G, E](
+        self, transform: Transform1[T, result.Result[G, E]]
+    ) -> Enum[G]:
         """Keep only `Ok` values returned by `transform`.
 
-        >>> Enum(1, 2, 3).filter_map(lambda x: Ok(x*2) if x>1 else Error("bad"))
+        >>> Enum(1, 2, 3).filter_map(lambda x: result.Ok(x*2) if x>1 else result.Err("bad"))
         Enum(data=[4, 6])
         """
-        result = []
+        r = []
         for element in self:
             match transform(element):
-                case Ok(x):
-                    result.append(x)
-                case Error(_e):
+                case result.Ok(x):
+                    r.append(x)
+                case result.Err(_e):
                     pass
-        return Enum(result)
+        return Enum(r)
 
     def flatten(self) -> Enum:
         """Recursively flatten nested iterables.
@@ -334,13 +335,13 @@ class Enum[T](collections.UserList):
         >>> Enum([1, [2, 3], [[4]]]).flatten()
         Enum(data=[1, 2, 3, 4])
         """
-        result = []
+        r = []
         for element in self:
             if isinstance(element, Iterable):
-                result.extend(Enum(element).flatten())
+                r.extend(Enum(element).flatten())
             else:
-                result.append(element)
-        return Enum(result)
+                r.append(element)
+        return Enum(r)
 
     def flat_map[G](self, transform: Transform1[T, Iterable[G]]) -> Enum[G]:
         """Transform each element into an `Iterable` and concat them after.
@@ -401,10 +402,10 @@ class Enum[T](collections.UserList):
         >>> Enum("a", "A", "b", "B").freq_by(str.upper)
         Map(data={'A': 2, 'B': 2})
         """
-        result = collections.defaultdict(int)
+        r = collections.defaultdict(int)
         for element in self:
-            result[key_fun(element)] += 1
-        return Map(result)
+            r[key_fun(element)] += 1
+        return Map(r)
 
     def group_by[G, E](
         self,
@@ -586,13 +587,13 @@ class Enum[T](collections.UserList):
         >>> Enum("aaa", "bbb", "cc", "dd").uniq_by(len)
         Enum(data=['aaa', 'cc'])
         """
-        result = []
+        r = []
         keys = []
         for key, element in zip(self.map(key_fun), self):
             if key not in keys:
                 keys.append(key)
-                result.append(element)
-        return Enum(result)
+                r.append(element)
+        return Enum(r)
 
     def zip(self) -> Enum[tuple]:
         """Zip inner iterables together.
@@ -795,12 +796,12 @@ class Map[K, V](collections.UserDict):
         >>> Map({"a": 1, "b": 2}).take("b")
         Map(data={'b': 2})
         """
-        result = {}
+        r = {}
         for key in keys:
             if key not in self.keys():
                 continue
-            result[key] = self[key]
-        return Map(result)
+            r[key] = self[key]
+        return Map(r)
 
     def flip(self) -> Map[V, K]:
         """Swaps keys with values.
