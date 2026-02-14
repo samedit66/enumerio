@@ -1,5 +1,8 @@
 # enumerio
 
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![compose >>=](https://img.shields.io/badge/compose-%3E%3E%3D-111827?style=for-the-badge&logoColor=white)
+
 > [!WARNING]
 > This project is under heavy development, some functions come and go, and this `README.md`
 > may contain outdated information about supported features.
