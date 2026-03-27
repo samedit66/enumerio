@@ -70,7 +70,10 @@ class Enum[T](collections.UserList):
         >>> Enum(True, False, True).all()
         False
         """
-        return all(self.map(predicate))
+        for element in self:
+            if not predicate(element):
+                return False
+        return True
 
     def any(self, predicate: Predicate[T] = identity) -> bool:
         """Return `True` if any element satisfies predicate or is truthy if no predicate.
@@ -83,22 +86,10 @@ class Enum[T](collections.UserList):
         >>> Enum(True, False, True).any()
         True
         """
-        return any(self.map(predicate))
-
-    def at(self, index: int, default: T | None = None) -> T | None:
-        """Return element at `index` or `default` if `index` is out of range.
-
-        >>> Enum(1, 2, 3).at(2)
-        3
-        >>> Enum(1, 2, 3).at(10) is None
-        True
-        >>> Enum(1, 2, 3).at(10, default=42)
-        42
-        """
-        try:
-            return self[index]
-        except IndexError:
-            return default
+        for element in self:
+            if predicate(element):
+                return True
+        return False
 
     def chunked(
         self, count: int, step: int | None = None, discard: bool = False
@@ -197,7 +188,7 @@ class Enum[T](collections.UserList):
         >>> Enum(1).empty()
         False
         """
-        return len(self) == 0
+        return self.size() == 0
 
     def fetch(self, index: int) -> result.Result[T, str]:
         """Return `Ok(value)` at `index` or `Error` if out of range.
@@ -351,42 +342,40 @@ class Enum[T](collections.UserList):
         """
         return self.map(transform).concat()
 
-    def find(self, predicate: Predicate[T], default: T | None = None) -> T | None:
+    def find(self, predicate: Predicate[T]) -> option.Option[T]:
         """Return first matching element or `default`.
 
         >>> Enum(1, 3, 4).find(lambda x: x % 2 == 0)
-        4
-        >>> Enum(1, 3).find(lambda x: x % 2 == 0, 0)
-        0
+        Some(value=4)
+        >>> Enum(1, 3).find(lambda x: x % 2 == 0)
+        Nothing()
         """
         for element in self:
             if predicate(element):
-                return element
-        return default
+                return option.Some(element)
+        return option.Nothing()
 
-    def find_index(self, predicate: Predicate[T]) -> int | None:
+    def find_index(self, predicate: Predicate[T]) -> option.Option[int]:
         """Return index of first matching element.
 
         >>> Enum(5, 8, 9).find_index(lambda x: x % 2 == 0)
-        1
+        Some(value=1)
         """
         for i, element in enumerate(self):
             if predicate(element):
-                return i
-        return None
+                return option.Some(i)
+        return option.Nothing()
 
-    def find_value[G](
-        self, transform: Transform1[T, G], default: G | None = None
-    ) -> G | None:
+    def find_value[G](self, transform: Transform1[T, G]) -> option.Option[G]:
         """Return first truthy transformed value.
 
         >>> Enum(1, 2, 3).find_value(lambda x: x if x > 2 else None)
-        3
+        Some(value=3)
         """
         for element in self:
             if r := transform(element):
-                return r
-        return default
+                return option.Some(r)
+        return option.Nothing()
 
     def freq(self) -> Map[T, int]:
         """Count occurrences of each element.
@@ -606,10 +595,10 @@ class Enum[T](collections.UserList):
     def zip_with(self, zipper) -> Enum[tuple]:
         """Zip and transform elements.
 
-        >>> Enum([1, 2],[3, 4]).zip_with(lambda a, b: a + b)
+        >>> Enum([1, 2], [3, 4]).zip_with(lambda a, b: a + b)
         Enum(data=[4, 6])
         """
-        return self.zip().map(lambda t: zipper(*t))
+        return Enum(zipper(*t) for t in zip(*self))
 
     def pluck(self, *keys: Any) -> Enum[Any]:
         """Select key values from each element.
@@ -678,9 +667,10 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3).none(lambda x: x == 2)
         False
         """
-        if predicate is None:
-            return all(not element for element in self)
-        return all(not predicate(element) for element in self)
+        for element in self:
+            if predicate(element):
+                return False
+        return True
 
     def one(self, predicate: Predicate[T] = identity) -> bool:
         """Return `True` if exactly one element satisfies `predicate`, otherwise - `False`.
@@ -692,7 +682,13 @@ class Enum[T](collections.UserList):
         >>> Enum(1, 2, 3).one(lambda x: x > 5)
         False
         """
-        return self.map(predicate).sum() == 1
+        n = 0
+        for element in self:
+            if predicate(element):
+                if n == 1:
+                    return False
+                n += 1
+        return n == 1
 
 
 @dataclasses.dataclass(slots=True, init=False)
